@@ -511,5 +511,110 @@
         renderChatList();
         renderWelcomeScreen();
     </script>
+    <!-- قسم التنسيق المتجاوب لجميع الأجهزة -->
+<style>
+    /* تحسينات التصميم المتجاوب للهواتف والشاشات الصغيرة */
+    @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            right: -280px;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            transition: transform 0.3s ease;
+            box-shadow: -5px 0 25px rgba(0,0,0,0.5);
+        }
+        .sidebar.open {
+            transform: translateX(-280px);
+        }
+        .top-bar {
+            display: flex !important;
+        }
+        .message-wrapper {
+            max-width: 100% !important;
+            padding: 0 5px;
+        }
+        .message {
+            max-width: 90% !important;
+            font-size: 0.9rem !important;
+            padding: 12px 15px !important;
+        }
+        .input-container {
+            padding: 10px 12px 15px !important;
+        }
+        .input-box {
+            padding: 6px 10px !important;
+            border-radius: 20px !important;
+        }
+        .welcome-screen h1 {
+            font-size: 1.5rem !important;
+        }
+        .suggestions {
+            grid-template-columns: 1fr !important;
+        }
+    }
+
+    /* تحسينات للشاشات المتوسطة والكبيرة */
+    @media (min-width: 769px) {
+        .sidebar {
+            position: relative !important;
+            transform: none !important;
+        }
+        .top-bar {
+            display: none !important;
+        }
+    }
+</style>
+
+<!-- كود تثبيت التطبيق (PWA) -->
+<script>
+    // 1. توليد وحقن ملف الـ Manifest ديناميكياً لتفعيل خيار "Add to Home Screen"
+    const manifestData = {
+        "name": "مساعد مصطفى عبدالرحمن الذكي",
+        "short_name": "مساعد AI",
+        "start_url": "./",
+        "display": "standalone",
+        "background_color": "#0f172a",
+        "theme_color": "#38bdf8",
+        "icons": [
+            {
+                "src": "https://cdn-icons-png.flaticon.com/512/16938/16938031.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }
+        ]
+    };
+    const stringManifest = JSON.stringify(manifestData);
+    const blob = new Blob([stringManifest], {type: 'application/json'});
+    const manifestURL = URL.createObjectURL(blob);
+    const manifestTag = document.createElement('link');
+    manifestTag.rel = 'manifest';
+    manifestTag.href = manifestURL;
+    document.head.appendChild(manifestTag);
+
+    // 2. تسجيل الـ Service Worker لضمان عمل التطبيق بكفاءة وقابلية التثبيت
+    if ('serviceWorker' in navigator) {
+        const swCode = `
+            self.addEventListener('install', (e) => {
+                self.skipWaiting();
+            });
+            self.addEventListener('activate', (e) => {
+                e.waitUntil(clients.claim());
+            });
+            self.addEventListener('fetch', (e) => {
+                e.respondWith(
+                    fetch(e.request).catch(() => caches.match(e.request))
+                );
+            });
+        `;
+        const swBlob = new Blob([swCode], {type: 'text/javascript'});
+        const swURL = URL.createObjectURL(swBlob);
+        
+        navigator.serviceWorker.register(swURL)
+            .then(() => console.log("PWA Service Worker Registered Successfully!"))
+            .catch((err) => console.log("SW Registration Failed:", err));
+    }
+</script>
+
 </body>
 </html>
